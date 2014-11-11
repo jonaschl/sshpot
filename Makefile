@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -g -Wall
+#CFLAGS = -g -Wall
+CFLAGS = -O3 
 CHMOD := $(shell which chmod)
 SETCAP := $(shell which setcap)
 USER := $(shell whoami)
@@ -7,7 +8,7 @@ USER := $(shell whoami)
 all: sshpot
 
 sshpot: main.o auth.o
-	$(CC) $(CFLAGS) $^ -lssh -o $@
+	$(CC) $(CFLAGS) $^ -lssh -pthread -o $@
 
 main.o: main.c config.h
 	$(CC) $(CFLAGS) -c main.c
@@ -22,3 +23,5 @@ install:
 
 clean:
 	\/bin/rm -f *.o
+mrproper
+	\/bin/rm -f sshpot
