@@ -23,5 +23,5 @@ install:
 
 clean:
 	\/bin/rm -f *.o
-mrproper
+mrproper:
 	\/bin/rm -f sshpot
