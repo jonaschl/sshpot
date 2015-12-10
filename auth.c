@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+// for json
+#include <jansson.h>
 
 
 /* Stores the current UTC time. Returns 0 on error. */
@@ -31,13 +33,12 @@ static int *get_client_ip(struct connection *c) {
 
 	return 0;
 }
-
-
-/* Write interesting information about a connection attempt to  LOGFILE. 
+/* Write interesting information about a connection attempt to  LOGFILE.
  * Returns -1 on error. */
 static int log_attempt(struct connection *c) {
 	FILE *f;
 	int r;
+
 
 	if ((f = fopen(LOGFILE, "a+")) == NULL) {
 		fprintf(stderr, "Unable to open %s\n", LOGFILE);
@@ -56,10 +57,21 @@ static int log_attempt(struct connection *c) {
 
 	c->user = ssh_message_auth_user(c->message);
 	c->pass = ssh_message_auth_password(c->message);
+	//create a new json object
+	json_t *c_json = json_object();
+	// add to c_json time, ip, username and password
+	json_object_set_new(c_json, "time", json_string(c->con_time));
+	json_object_set_new(c_json, "ip-adress", json_string(c->client_ip));
+	json_object_set_new(c_json, "username", json_string(c->user));
+	json_object_set_new(c_json, "password", json_string(c->pass));
+
+
 
 	if (DEBUG) { printf("%s %s %s %s\n", c->con_time, c->client_ip, c->user, c->pass); }
-	r = fprintf(f, "%s %s %s %s\n", c->con_time, c->client_ip, c->user, c->pass);
+	r = fprintf(f, "%s\n", json_dumps(c_json, 0));
 	fclose(f);
+	// free the json object
+	json_decref(c_json);
 	return r;
 }
 
